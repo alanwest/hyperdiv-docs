@@ -1,9 +1,29 @@
 from importlib.metadata import version
 import hyperdiv as hd
+from opentelemetry import metrics
+from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
+from opentelemetry.sdk.metrics import MeterProvider
+from opentelemetry.sdk.metrics.export import (
+    ConsoleMetricExporter,
+    PeriodicExportingMetricReader,
+)
+from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from .router import router
 from .menu import menu
 from .app_template_demo import main as demo_main
 
+resource = Resource(attributes={
+    SERVICE_NAME: "HyperdivDocs"
+})
+
+# metric_reader = PeriodicExportingMetricReader(ConsoleMetricExporter())
+metric_reader = PeriodicExportingMetricReader(
+    OTLPMetricExporter()
+    # OTLPMetricExporter(endpoint="<traces-endpoint>/v1/metrics")
+)
+meter_provider = MeterProvider(resource=resource, metric_readers=[metric_reader])
+
+metrics.set_meter_provider(meter_provider)
 
 def render_title(slot=None):
     with hd.hbox(gap=0.5, font_size=1, align="center", slot=slot):
