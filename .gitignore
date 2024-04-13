@@ -1,4 +1,5 @@
 __pycache__
 
 .DS_Store
+hyperdiv_docs/docs_metadata.json
 hyperdiv_docs/extractor/extracted.json
