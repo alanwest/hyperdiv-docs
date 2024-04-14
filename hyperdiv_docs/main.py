@@ -1,11 +1,19 @@
 from importlib.metadata import version
 import hyperdiv as hd
 from opentelemetry import metrics
+from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.metrics.export import (
     ConsoleMetricExporter,
     PeriodicExportingMetricReader,
+)
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import (
+    ConsoleSpanExporter,
+    BatchSpanProcessor,
+    SimpleSpanProcessor,
 )
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from .router import router
@@ -24,6 +32,11 @@ metric_reader = PeriodicExportingMetricReader(
 meter_provider = MeterProvider(resource=resource, metric_readers=[metric_reader])
 
 metrics.set_meter_provider(meter_provider)
+
+tracer_provider = TracerProvider(resource=resource)
+span_processor = BatchSpanProcessor(OTLPSpanExporter())
+tracer_provider.add_span_processor(span_processor)
+trace.set_tracer_provider(tracer_provider)
 
 def render_title(slot=None):
     with hd.hbox(gap=0.5, font_size=1, align="center", slot=slot):
